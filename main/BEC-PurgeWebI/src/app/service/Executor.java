@@ -16,9 +16,18 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 
-public class Executor extends RestFulUtil {
+import com.crystaldecisions.sdk.exception.SDKException;
+import com.crystaldecisions.sdk.framework.IEnterpriseSession;
+import com.crystaldecisions.sdk.occa.infostore.IInfoStore;
+import com.crystaldecisions.sdk.plugin.desktop.program.IProgramBase;
+
+
+public class Executor extends RestFulUtil implements com.crystaldecisions.sdk.plugin.desktop.program.IProgramBase {
 
     public static void main(String[] args) throws Exception {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		String timeStamp = LocalDateTime.now().format(formatter);
+		System.out.println(timeStamp + " Start time");
 		
     	tessst();
     	System.exit(0);
@@ -35,14 +44,14 @@ public class Executor extends RestFulUtil {
         biggest.setRequired(false);
         options.addOption(biggest);
         
-        HelpFormatter formatter = new HelpFormatter();
+        HelpFormatter h_formatter = new HelpFormatter();
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd;
         try {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
             System.err.println(e.getMessage());
-            formatter.printHelp("Purge_Webi -option1 <arg1> -option2 <arg2>", options);
+            h_formatter.printHelp("Purge_Webi -option1 <arg1> -option2 <arg2>", options);
             System.exit(1);
             return;
         }
@@ -54,7 +63,11 @@ public class Executor extends RestFulUtil {
         if (cmd.hasOption("big")) {
             System.out.println("Number of biggest documents to be purged is : " + cmd.getOptionValue("big"));
         }
-        System.exit(0);
+		formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		timeStamp = LocalDateTime.now().format(formatter);
+		System.out.println(timeStamp + " End time");
+
+		System.exit(0);
     }
     
 	private static void PurgeDocID(String DocID) {
@@ -117,10 +130,6 @@ public class Executor extends RestFulUtil {
    }
 
     private static void tessst() {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		String timeStamp = LocalDateTime.now().format(formatter);
-		System.out.println(timeStamp + " Start time");
-    	
     	try {
 	    	PurgeAndSave instance = new PurgeAndSave();
 	    	instance.PurgeLargest(TIMEOUT_MINUTE);
@@ -128,6 +137,12 @@ public class Executor extends RestFulUtil {
 			ex.printStackTrace();
 		}
     }
+
+	@Override
+	public void run(IEnterpriseSession arg0, IInfoStore arg1, String[] arg2) throws SDKException {
+		// TODO Auto-generated method stub
+		
+	}
     	
     
 }

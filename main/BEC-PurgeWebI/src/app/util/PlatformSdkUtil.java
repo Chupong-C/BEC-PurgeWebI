@@ -38,6 +38,10 @@ public class PlatformSdkUtil extends Config {
 		
 		try {
 			IEnterpriseSession boSession = CrystalEnterprise.getSessionMgr().logon(userName, password, CMS, authen);
+			if (boSession == null)
+				System.out.println("SdkLogon failed");
+			else
+				System.out.println("SdkLogon Success");
 			return boSession;
 		} catch (SDKException ex) {
 			errMsg = ex.toString();
@@ -47,6 +51,7 @@ public class PlatformSdkUtil extends Config {
 	
 	public static void SdkLogoff(IEnterpriseSession boSession) throws SDKException {
 		boSession.logoff();
+		System.out.println("SdkLogoff");
 	}
 
 }

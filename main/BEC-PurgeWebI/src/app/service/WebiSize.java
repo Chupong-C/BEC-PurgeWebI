@@ -34,6 +34,7 @@ public class WebiSize extends app.util.PlatformSdkUtil {
 		IInfoObjects boInfoObjects = boInfoStore.query(query);
 
 		List<String> WEBIs = new ArrayList<String>();
+		System.out.println("Total WebI size over " + purgeSize + " bytes is " + boInfoObjects.size());
 		// Adds all IDs at List<String>
 		for (int i = 0; i < boInfoObjects.size(); i++) {
 			boInfoObject = (IInfoObject) boInfoObjects.get(i);
