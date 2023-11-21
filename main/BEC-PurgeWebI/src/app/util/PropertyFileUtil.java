@@ -3,7 +3,6 @@ package app.util;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -37,9 +36,13 @@ public class PropertyFileUtil {
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+	        System.exit(1);
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+	        System.exit(1);
+
 		}
 
 		this.CMS_CLUSTER = appProps.getProperty("CMS_CLUSTER");

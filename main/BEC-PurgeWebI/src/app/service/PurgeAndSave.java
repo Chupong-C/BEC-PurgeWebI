@@ -1,14 +1,12 @@
 package app.service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-//import java.util.concurrent.TimeUnit;
+
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import app.service.WebiSize;
+import app.util.PlatformSdkUtil;
 import app.util.RestFulUtil;
 
 /**
@@ -35,38 +33,46 @@ public class PurgeAndSave extends RestFulUtil {
 		saveDocument(DocumentID);
 	}
 
-	public void PurgeLargest(int MinuteLimit) throws Exception {
+	public void IsEmptyWebi(String DocumentID) throws Exception {
+
+		isAllDataProvidersEmpty(DocumentID);
+
+	}
+	
+	public void PurgeLargest(int MinuteLimit, int fileSize) throws Exception {
 		LocalDateTime endTime = LocalDateTime.now(), startTime = LocalDateTime.now();
-		String lastID = "";
-		Boolean timeOut = false;
+		Boolean isTimeOut = false;
+		
+		// If no parameter pass use default from app.properties file (Config class).
+		MinuteLimit = (MinuteLimit<0 ? TIMEOUT_MINUTE : MinuteLimit);
+		fileSize = (fileSize<0 ? FILE_BIGGER_THAN_BYTE : fileSize);
 		
 		// Get list of WebI DocIDs of this batch
-		List<String> WEBIs = WebiSize.GetLargestList(TOP_BATCH_SIZE, SIZE_BIGGER_THAN);
+		List<String> WEBIs = PlatformSdkUtil.GetLargestWebiList(TOP_BATCH_SIZE, fileSize);
 		
-		// Not found WebI bigger than BIGGER_THAN
+		// Not found WebI bigger than SIZE_BIGGER_THAN
 		if (WEBIs.isEmpty()) return;
+		restLogon();
 
-		do {
-			// Keep ID of this batch
-			lastID = WEBIs.get(0);
+		// Check if the first largest WebI need to purge or not
+		while (!isAllDataProvidersEmpty(WEBIs.get(0)) && !isTimeOut) {
 
 			// Purge all WebI in this list (batch)
-			restLogon();
-			for (int j = 0 ; j < WEBIs.size() && !timeOut; j++) {
+			for (int j = 0 ; j < WEBIs.size() && !isTimeOut; j++) {
 				PurgeWebi(WEBIs.get(j));
 				endTime = LocalDateTime.now();
-				timeOut = !(MinuteLimit == 0 || MinuteLimit > Duration.between(startTime, endTime).toMinutes());
+				isTimeOut = !(MinuteLimit == 0 || MinuteLimit > Duration.between(startTime, endTime).toMinutes());
 			}
-			restLogoff();
 			
 			// If number of documents is less than TOP_BATCH_SIZE, no more loop 
-			if (WEBIs.size() < TOP_BATCH_SIZE) break;
+			if (WEBIs.size() < TOP_BATCH_SIZE || isTimeOut) break;
 			
 			// Get list of WebI DocIDs of next batch
-			WEBIs = WebiSize.GetLargestList(TOP_BATCH_SIZE, SIZE_BIGGER_THAN);
+			WEBIs = PlatformSdkUtil.GetLargestWebiList(TOP_BATCH_SIZE, FILE_BIGGER_THAN_BYTE);
+			
+		}
+		restLogoff();
 
-		// If this-batch ID vs. next-batch ID is same then break loop
-		} while (!lastID.equals(WEBIs.get(0)) && !timeOut);
 	}
 
 	public void PurgeBatch(int MinuteLimit, int batchStart) throws Exception {

@@ -634,6 +634,41 @@ public class RestFulUtil extends Config {
 		// Returns the data provider details
 		return request.getResponseContent();
 	}
+	
+
+	/**
+	 * 	// Check if any data providers have data (rowCount) or not?
+	 * 
+	 * @param docID		The ID of the document to be checked
+	 * @return 			Boolean
+	 * @throws			Exception
+	 */
+	protected static Boolean isAllDataProvidersEmpty(String docID) throws Exception {
+		RestFulRequest request = new RestFulRequest(logonToken);
+
+		// Getting the List of Data Providers
+		request.send(RL_RWS + "/documents/" + docID + "/dataproviders", "GET", null);
+		Document docResponse = getXmlDocument(request.getResponseContent());
+
+		// Gets all Data Providers IDs
+		XPathExpression expr = xPath.compile("//id/text()");
+		NodeList nodeList = (NodeList) expr.evaluate(docResponse, XPathConstants.NODESET);
+
+		// Check rowCount of all Data Providers
+		int totalRowCount=0;
+		for (int i=0; i < nodeList.getLength() & totalRowCount == 0; i++) {
+			// Getting the Details of a Data Provider
+			request.send(RL_RWS + "/documents/" + docID + "/dataproviders/" + nodeList.item(i).getNodeValue(), "GET", null);
+			Document dpResponse = getXmlDocument(request.getResponseContent());
+
+			// Get row count of a Data Provider
+			XPathExpression dpExpr = xPath.compile("//rowCount/text()");
+			NodeList dpNodeList = (NodeList) dpExpr.evaluate(dpResponse, XPathConstants.NODESET);
+			String rowCount = dpNodeList.item(0).getNodeValue();
+			totalRowCount = totalRowCount + Integer.parseInt(rowCount);
+		}
+		return (totalRowCount == 0);
+	}
 
 	/**
 	 * Purges all data with specific doc and data provider.
@@ -1367,8 +1402,10 @@ public class RestFulUtil extends Config {
 			try {
 				inputStream.close();
 			} 
-			catch (IOException e) {
-				e.printStackTrace();
+			catch (IOException ex) {
+				ex.printStackTrace();
+		        System.exit(1);
+
 			}
 		}
 	}
@@ -1390,7 +1427,9 @@ public class RestFulUtil extends Config {
 			Node node = getNode(root, toPath);
 			node.insertBefore(dest, null);
 		} catch (Exception ex) {
-			System.out.println(ex.getMessage());
+			ex.printStackTrace();
+	        System.exit(1);
+
 		}
 	}
 

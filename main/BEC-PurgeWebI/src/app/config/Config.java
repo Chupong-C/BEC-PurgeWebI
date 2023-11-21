@@ -34,19 +34,20 @@ public class Config {
 	//
 
 	//
-	// Value getting from the app.property file
+	// Value getting from the app.properties file
 	//
+	protected static String PROPERTIES_FILE = "app.properties";
 	protected static String CMS_CLUSTER;
 	protected static String CMS_HOST;
 	protected static String CMS_PORT;
 	protected static String CMS_USER;
 	protected static String CMS_PASS;
 	protected static String CMS_AUTH;				//secEnterprise, secLDAP
-	protected static Integer REST_HTTP_PORT;
-	protected static Integer REST_BATCH_SIZE;		// Limit when call API document listing */
-	protected static Integer TOP_BATCH_SIZE;		// Limit when call SDK query */
-	protected static Integer TIMEOUT_MINUTE;		// Runtime duration limit (minute)
-	protected static Integer SIZE_BIGGER_THAN;			// Purge only if file is bigger than (byte)
+	protected static int REST_HTTP_PORT;
+	protected static int REST_BATCH_SIZE;			// Limit when call API document listing */
+	protected static int TOP_BATCH_SIZE;			// Limit when call SDK query */
+	protected static int TIMEOUT_MINUTE;			// Runtime duration limit (minute)
+	protected static int FILE_BIGGER_THAN_BYTE;			// Purge only if file is bigger than (byte)
 
 
 	// RESTFUL WEB SERVICE URLs
@@ -112,18 +113,20 @@ public class Config {
 	
 	public Config() {
 
+		// Get properties file (app.properties) from working directory.
 		String rootPath = Thread.currentThread().getContextClassLoader().getResource("").getPath();
-		String appConfigPath = rootPath + "app.properties";
+		String appConfigPath = rootPath + PROPERTIES_FILE;
 
 		Properties appProps = new Properties();
 		try {
 			appProps.load(new FileInputStream(appConfigPath));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (FileNotFoundException ex) {
+			ex.printStackTrace();			// This goes to System.err
+	        System.exit(1);
+
+		} catch (IOException ex) {
+			ex.printStackTrace();			// This goes to System.err
+	        System.exit(1);
 		}
 
 		Config.CMS_CLUSTER = appProps.getProperty("CMS_CLUSTER");
@@ -137,7 +140,7 @@ public class Config {
 		Config.REST_BATCH_SIZE = Integer.parseInt(appProps.getProperty("REST_BATCH_SIZE"));
 		Config.TOP_BATCH_SIZE = Integer.parseInt(appProps.getProperty("TOP_BATCH_SIZE"));
 		Config.TIMEOUT_MINUTE = Integer.parseInt(appProps.getProperty("TIMEOUT_MINUTE"));
-		Config.SIZE_BIGGER_THAN = Integer.parseInt(appProps.getProperty("SIZE_BIGGER_THAN"));
+		Config.FILE_BIGGER_THAN_BYTE = Integer.parseInt(appProps.getProperty("SIZE_BIGGER_THAN"));
 
 		/** CMS URL (don't modify!) */
 		Config.CMS_SERVER_URL = "http://" + CMS_HOST + ":" + REST_HTTP_PORT;
